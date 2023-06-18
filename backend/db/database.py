@@ -1,11 +1,12 @@
 import sqlite3
-import backend.db.pinecone.upload_content as upload_content
+import pinecone
+import numpy as np
+import pandas as pd
 
 def initMetadataTable(cursor):
-    # Define the emotion column names
-    emotion_columns = ', '.join([f'emotion{i}' for i in range(1, 49)])
+    cursor.execute('DROP TABLE IF EXISTS Sentences')
 
-    # Create the "Sentences" table
+    emotion_columns = ', '.join([f'emotion{i}' for i in range(1, 49)])
     cursor.execute(f'''
         CREATE TABLE Sentences (
             user_id TEXT,
@@ -22,23 +23,41 @@ def initMetadataTable(cursor):
     ''')
 
 def initEmotionsTable():
-    upload_content.create_index("hume-emotion", dimension=48)
+    pinecone.create_index("hume-emotion", dimension=48)
 
-def insertEmotion():
-    index = upload_content.Index("hume-emotion")
+def insertEmotion(index):
     index.upsert([
-        ("A", [0.1] * 48)
+        ("A", np.concatenate((np.ones(24), np.zeros(24))).tolist()),
+        ("B", [1] * 48),
+        ("C", np.random.rand(48,).tolist()),
     ])
 
+def getRelevantCommandIds(index, vector, top_k, cursor):
+    responses = index.query(
+        vector=vector,
+        top_k=top_k,
+        include_values=True
+    )
+    for response in responses.matches:
+        cursor.execute("SELECT * FROM Sentences WHERE sentence_id = ?", (response.id,))
+        rows = cursor.fetchall()
+    return rows
+
+def rankExperiences(ids):
+    pass
+
 if __name__ == '__main__':
-    # Connect to the SQLite database
     conn = sqlite3.connect('your_database.db')
     cursor = conn.cursor()
 
-    upload_content.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
-    # initMetadataTable()
+    pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
+    index = pinecone.Index("hume-emotion")
+    # initMetadataTable(cursor)
     # initEmotionsTable()
-    insertEmotion()
+    # insertEmotion(index)
+    query = [0.1] * 48
+    print(getRelevantCommandIds(index, query, 3, cursor))
+
 
     # Commit the changes and close the connection
     conn.commit()

@@ -7,6 +7,7 @@ import numpy as np
 from cloud import upload_to_cloud_storage
 from hume_embedding import getEmbeddingsLanguage
 from clustering import run_clustering
+from choose_query import choose_query_from_prompt
 from utils import getCloudUrl, create_sentences
 from test_script import simulateSingleUploadCall
 from db.pinecone.upload_content import embed_transcript_upload_pinecone
@@ -93,7 +94,22 @@ def process_hume_results():
   episode_topics = run_clustering([sentences_dict], [sentences_embeds])
   
   # Process emotions and metadata and upload to SQL - TODO
-  
-  
-  
+
   return episode_topics
+
+
+# Given a user query, determine which function to call
+'''
+JSON body input: {query: str}
+'''
+@app.route('/query', methods=['POST'])
+def query():
+  body = request.get_json()
+  query = body['query']
+  
+  # Run the query through the 'choose_query' function
+  function_call = choose_query_from_prompt(query)
+  
+  return function_call
+  
+  

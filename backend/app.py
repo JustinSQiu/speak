@@ -127,6 +127,11 @@ def query():
   
   if function_name == 'make_sql_query':
     return None
+  elif function_name == 'make_emotion_vector_db_query':
+    emotion = function_arguments.get('emotion', None)
+    # Embed emotion into an emotional vector (use Hume)
+    
+    # Query pinecone for the top 5 closest emotional vectors
   elif function_name == 'make_content_vector_db_query':
     
     topic = function_arguments.get('topic', None)

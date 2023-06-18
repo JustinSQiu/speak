@@ -1,6 +1,8 @@
 import { useReactMediaRecorder } from "react-media-recorder";
 import { useState } from 'react'
 import 'firebase/firestore';
+import { TextField, Box, Button, Typography, Stack } from "@mui/material";
+import { FormControl } from "@mui/base";
 
 const TextMemo = () => {
 
@@ -8,6 +10,7 @@ const TextMemo = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        console.log('submitted')
         // Perform desired action with the form data
         console.log('Form submitted with value:', inputValue);
         // Reset the input value
@@ -24,10 +27,27 @@ const TextMemo = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="text" value={inputValue} onChange={handleChange} />
-            <button type="submit">Submit</button>
-        </form>
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+            }}
+        >
+                <TextField
+                    sx={{ width: '75%'}}
+                    id="outlined-multiline-static"
+                    label="Journal your Thoughts"
+                    multiline
+                    defaultValue=""
+                    onChange={handleChange}
+                    onSubmit={handleSubmit}
+                />
+
+                <Button onClick={handleSubmit} variant="contained">
+                    Submit Entry
+                </Button>
+        </Box>
+
     );
 };
 

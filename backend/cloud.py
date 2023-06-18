@@ -35,11 +35,12 @@ def upload_to_cloud_storage(data, type):
         blob_name = f"{new_id}.txt"
         c_type = 'text/plain'
 
-    try:
-        with open(file_path, 'wb') as file:
-            file.write(data)
-    except Exception as e:
-        return None
+    with open(file_path, 'wb') as destination:
+        contents = data
+        destination.write(contents)
+
+    
+
 
     conn = sqlite3.connect('memos.db') 
     cursor = conn.cursor()
@@ -49,5 +50,6 @@ def upload_to_cloud_storage(data, type):
     blob = bucket.blob(blob_name)
     blob.content_type = c_type
     blob.upload_from_filename(file_path)
+    blob.download_to_filename(file_path)
     conn.close()
     return new_id, current_time, current_date

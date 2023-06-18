@@ -43,16 +43,17 @@ def processChunks(response, model="language"):
 
 def getEmbeddingsLanguage(path):
     client = HumeBatchClient("cRASOeAzmGOUQveP3vrNBb1MpSEPGejdvWPG8UAQYrEkOrpu")
+    # Check if path exists
     urls = [path]
     # What other configs are there to use?
     config = [LanguageConfig(granularity="utterance")]
 
-    job = client.submit_job(None, config, files=urls)
+    job = client.submit_job(urls, config)
 
     details = job.await_complete()
     print("Details status", details.get_status())
     response = job.get_predictions()
-    # job.download_predictions(f"audio{i}.json")
+    job.download_predictions(f"test.json")
     processedLanguage = processChunks(response, model="language")
 
     return processedLanguage
@@ -99,3 +100,5 @@ def main():
 
 # if __name__ == "__main__":
 #     main()
+
+# getEmbeddingsLanguage("https://storage.googleapis.com/calhacks-videos/65c47989-5671-40c8-a88b-a951fdb7234a.mp4")

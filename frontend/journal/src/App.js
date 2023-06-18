@@ -6,10 +6,11 @@ import { useState, useRef } from "react";
 import VideoRecorder from './VideoRecorder'
 import AudioRecorder from './AudioRecorder'
 import TextMemo from './TextMemo'
+import InputTabs from './InputTabs'
 
 const App = () => {
     return (
-        <TextMemo />
+        <MainPage />
     );
 };
 

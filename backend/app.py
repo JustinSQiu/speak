@@ -4,15 +4,15 @@ from flask_cors import CORS
 
 import pandas as pd
 import numpy as np
-from backend.cloud import upload_to_cloud_storage
-from backend.hume_embedding import getEmbeddingsLanguage
-from backend.clustering import run_clustering
-from backend.choose_query import choose_query_from_prompt
-from backend.utils import getCloudUrl, create_sentences
-from backend.test_script import simulateSingleUploadCall
-from backend.db.pinecone.upload_content import embed_transcript_upload_pinecone
-from backend.db.pinecone.query_content import query_pinecone
-from backend.db.database import insertEmotion
+from cloud import upload_to_cloud_storage
+from hume_embedding import getEmbeddingsLanguage
+from clustering import run_clustering
+from choose_query import choose_query_from_prompt
+from utils import getCloudUrl, create_sentences
+from test_script import simulateSingleUploadCall
+from db.pinecone.upload_content import embed_transcript_upload_pinecone
+from db.pinecone.query_content import query_pinecone
+from db.database import insertEmotion
 
 # To run: flask run --host=0.0.0.0 --debug
 
@@ -27,17 +27,17 @@ def hello_world():
 
 @app.route("/video", methods=["POST"])
 def get_recording():
-    (id, time, date) = upload_to_cloud_storage(request.data, 1)
-    url = getCloudUrl(id)
-    processedEmbeddings = getEmbeddingsLanguage(url)
-    metadata = {
-        "journalId": id,
-        "time": time,
-        "date": date,
-        "userId": 0,
-        "type": "video",
-    }
-    return "Success"
+  (id, time, date) = upload_to_cloud_storage(request.data, 1)
+    # url = getCloudUrl(id)
+    # processedEmbeddings = getEmbeddingsLanguage(url)
+    # metadata = {
+    #     "journalId": id,
+    #     "time": time,
+    #     "date": date,
+    #     "userId": 0,
+    #     "type": "video",
+    # }
+  return "Success"
 
 
 @app.route("/audio", methods=["POST"])

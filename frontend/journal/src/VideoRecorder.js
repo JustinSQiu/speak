@@ -1,8 +1,10 @@
 import { useReactMediaRecorder } from "react-media-recorder";
 import { getStorage, ref, uploadBytes } from "firebase/storage"
-import {useState} from 'react'
+import { useState } from 'react'
 import 'firebase/firestore';
 import { initializeApp } from 'firebase/app'
+import { Button } from "@mui/material";
+import { Stack } from "@mui/system";
 
 // const firebaseConfig = {
 //     apiKey: "AIzaSyBAnQ-KG1AwIlyqJn3npw6xc2qoLWgZbWE",
@@ -25,9 +27,13 @@ const VideoRecorder = () => {
 
     const handleStop = (blobUrl, blob) => {
         setBlob(blob)
+        // var formData = new FormData();
+        var fileName = 'local.mp4'
+        // formData.append("blob", blob, fileName)
+        const file = new File([blob], fileName, {type: 'video/mp4'})
         fetch('http://localhost:5000/video', {
             method: 'POST',
-            body: blob,
+            body: file,
             mode: 'no-cors',
         }).then(console.log("sent to backend"))
     }
@@ -36,12 +42,18 @@ const VideoRecorder = () => {
         useReactMediaRecorder({ video: true, onStop: handleStop });
 
     return (
-        <div>
+        <>
             <p>{status}</p>
-            <button onClick={startRecording}>Start Recording</button>
-            <button onClick={stopRecording}>Stop Recording</button>
             <video src={mediaBlobUrl} controls autoPlay loop />
-        </div>
+            <Stack direction="row" spacing={2}>
+                <Button onClick={startRecording} variant="contained" color="success">
+                    Start Recording
+                </Button>
+                <Button onClick={stopRecording} variant="outlined" color="error">
+                    Stop Recording
+                </Button>
+            </Stack>
+        </>
     );
 };
 

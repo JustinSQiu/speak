@@ -2,6 +2,9 @@ import sqlite3
 import pinecone
 import numpy as np
 import pandas as pd
+import langchain
+import openai
+from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
 
 def initMetadataTable(cursor):
     cursor.execute('DROP TABLE IF EXISTS Sentences')
@@ -66,6 +69,7 @@ def initMetadataTable(cursor):
 def initEmotionsTable():
     pinecone.create_index("hume-emotion", dimension=48)
 
+# TODO: load metadata and embedding in SQLite and Pinecone; this is placeholder data
 def insertEmotion(index):
     index.upsert([
         ("A", np.concatenate((np.ones(24), np.zeros(24))).tolist()),
@@ -100,7 +104,7 @@ def rankExperiences(rows):
             topicRanks[row['result'][0][2]] += 1
     return sorted(topicRanks.items(), key=lambda x: x[0])
 
-
+# TODO: add chunk with mean, adjust this experience ranker
 def rank_topics(sentences, topic_sentences, top_k):
     topic_ranks = {}  # Dictionary to store topic ranks
 
@@ -117,7 +121,12 @@ def rank_topics(sentences, topic_sentences, top_k):
 
     return top_ranked_topics
 
-    # pass
+def sqlAgentQuery():
+    db = SQLDatabase.from_uri("sqlite:///titanic.db")
+    llm = OpenAI(temperature=0)
+    db_chain = SQLDatabaseChain(llm=llm, database=db, verbose=True)
+    db_chain.run("what sentences have id that is 'a'?")
+    
 
 if __name__ == '__main__':
     conn = sqlite3.connect('your_database.db')
@@ -131,7 +140,6 @@ if __name__ == '__main__':
     query = [0.1] * 48
     rows = getRelevantCommandIds(index, query, 3, cursor)
     print(rankExperiences(rows))
-
 
     # Commit the changes and close the connection
     conn.commit()

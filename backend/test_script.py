@@ -19,8 +19,8 @@ def simulateSingleUploadCall(entryInfo):
     return fullData
     
     # Save fullData as a json
-    with open(f"test/{userInfo['entry_id']}.json", "w") as outfile:
-        json.dump(fullData, outfile)
+    # with open(f"test/{userInfo['entry_id']}.json", "w") as outfile:
+    #     json.dump(fullData, outfile)
     # print(
     #     "entry_id",
     #     fullData["journal_id"],

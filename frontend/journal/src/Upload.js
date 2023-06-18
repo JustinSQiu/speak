@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Stack, Input } from '@mui/material';
+import { Button, Stack, Input, Alert, Box } from '@mui/material';
 
 const Upload = () => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -18,7 +18,6 @@ const Upload = () => {
             setFileType(1)
             setError(false)
         } else {
-            document.getElementById("file-input").value = ''
             setError(true);
             setSelectedFile(null);
             setFileType(0)
@@ -27,7 +26,6 @@ const Upload = () => {
     };
 
     const handleUpload = () => {
-        document.getElementById("file-input").value = ''
         if (selectedFile) {
             const formData = new FormData();
             formData.append('file', selectedFile);
@@ -59,17 +57,33 @@ const Upload = () => {
         }
     };
 
+    const erroralert = <Alert severity="error">Invalid file type</Alert>
+    const successalert = <Alert severity="success">Successfully uploaded</Alert>
+
+    const style = {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    }
+
     return (
-        <div>
-            <Stack direction="row" spacing={2}>
-                <Button variant="contained" component="label">
+        <div style={style}>
+            <div>{error ? erroralert : ""}</div>
+            <div>{success ? successalert : ""}</div>
+            <Stack sx={{
+                m: 1,
+                width: '20%',
+                display: 'flex',
+                justifyContent: 'center',
+                // flexDirection: 'column'
+            }} direction="row" spacing={2}>
+                <Button variant="outlined" component="label">
                     Choose File
-                    <Input id='file-input' type="file" onChange={handleFileChange} />
+                    <input hidden type="file" onChange={handleFileChange} />
                 </Button>
-                <Button variant="contained" onClick={handleUpload}>Upload</Button>
+                <Button variant="text" onClick={handleUpload}>Upload</Button>
             </Stack>
-            <p>{error ? "Invalid file type" : ""}</p>
-            <p>{success ? "Successfully uploaded" : ""}</p>
+            <Alert severity="info">Filename: {selectedFile ? selectedFile.name : "No file selected"} </Alert>
         </div>
     );
 };

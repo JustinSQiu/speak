@@ -19,16 +19,16 @@ def simulateSingleUploadCall(entryInfo):
     return fullData
     
     # Save fullData as a json
-    with open(f"test/{userInfo['entry_id']}.json", "w") as outfile:
-        json.dump(fullData, outfile)
-    # print(
-    #     "entry_id",
-    #     fullData["journal_id"],
-    #     "date",
-    #     fullData["date"],
-    #     "numChunks",
-    #     len(fullData["chunks"]),
-    # )
+    # with open(f"test/{userInfo['entry_id']}.json", "w") as outfile:
+    #     json.dump(fullData, outfile)
+    print(
+        "entry_id",
+        fullData["journal_id"],
+        "date",
+        fullData["date"],
+        "numChunks",
+        len(fullData["chunks"]),
+    )
 
 
 def runSimulator():

@@ -1,4 +1,4 @@
-# test
+# CalHacks Team Project
 BACKEND:
 ```cd backend```
 

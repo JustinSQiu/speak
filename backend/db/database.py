@@ -121,12 +121,13 @@ def rank_topics(sentences, topic_sentences, top_k):
 
     return top_ranked_topics
 
+# NOTE: my work is in another file, will push it tmr but it's not completely working rn. shouldn't be relevant for your guys data integration
 def sqlAgentQuery():
     db = SQLDatabase.from_uri("sqlite:///titanic.db")
     llm = OpenAI(temperature=0)
     db_chain = SQLDatabaseChain(llm=llm, database=db, verbose=True)
     db_chain.run("what sentences have id that is 'a'?")
-    
+
 
 if __name__ == '__main__':
     conn = sqlite3.connect('your_database.db')

@@ -6,7 +6,7 @@ BACKEND:
 https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/
 (PLEASE ENTER INTO VIRTUAL ENV FIRST)
 
-2.  ~ pip install -r requirements.txt
+2.  ~ pip install -r requirements.txt/home/isaac/AI_Projects/calhacks/calhacks/backend/calhacks/lib64
 
 3. to run: flask run --host=0.0.0.0 --debug
 

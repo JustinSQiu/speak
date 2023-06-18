@@ -1,4 +1,4 @@
-# CalHacks Team Project
+# CalHacks Team Project: Isaac, Justin, Paul, Sachin
 BACKEND:
 ```cd backend```
 

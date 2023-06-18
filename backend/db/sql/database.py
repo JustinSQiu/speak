@@ -1,16 +1,14 @@
 import sqlite3
 import pinecone
+from constants import EMOTIONS
 # import numpy as np
 # import pandas as pd
 
 pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
 
 def initMetadataTable(cursor):
-    cursor.execute('DROP TABLE IF EXISTS Sentences')
-
-    emotion_columns = ', '.join([f'emotion{i}' for i in range(1, 49)])
-    cursor.execute(f'''
-        CREATE TABLE Sentences (
+    sql_query = f'''
+        CREATE TABLE Sentence (
             user_id TEXT,
             entry_id TEXT,
             topic_id TEXT,
@@ -20,51 +18,11 @@ def initMetadataTable(cursor):
             start_time TEXT,
             end_time TEXT,
             transcript_text TEXT
-            {emotion_columns} TEXT
-        )
-    ''')
-
-    # user_id = "userhello"
-    # entry_id = "entry456"
-    # topic_id = "hello789"
-    # sentence_id = "B"
-    # video_link = "hello"
-    # timestamp = 123
-    # start_time = "00:00:10"
-    # end_time = "00:00:20"
-    # transcript_text = "This is a test sentence."
-    # emotion_values = [0.1] * 48
-    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
-
-
-    # user_id = "user123"
-    # entry_id = "entry456"
-    # topic_id = "hello789"
-    # sentence_id = "A"
-    # video_link = "hello"
-    # timestamp = 123
-    # start_time = "00:00:10"
-    # end_time = "00:00:20"
-    # transcript_text = "This is a test sentence."
-    # emotion_values = [0.1] * 48
-    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
-
-
-    # user_id = "user123"
-    # entry_id = "entry456"
-    # topic_id = "hellonot7990"
-    # sentence_id = "C"
-    # video_link = "hello"
-    # timestamp = 123
-    # start_time = "00:00:10"
-    # end_time = "00:00:20"
-    # transcript_text = "This is a test sentence."
-    # emotion_values = [0.1] * 48
-    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
-
+            + ''' + ', '.join([f'{name} FLOAT' for name in EMOTIONS]) + ''')'''
+    print(sql_query)
+    cursor.execute(sql_query)
+    
+            
 def initEmotionsTable():
     pinecone.create_index("hume-emotion", dimension=48)
 
@@ -147,14 +105,14 @@ if __name__ == '__main__':
     conn = sqlite3.connect('metadata.db')
     cursor = conn.cursor()
 
-    pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
-    index = pinecone.Index("hume-emotion")
+    # pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
+    # index = pinecone.Index("hume-emotion")
     initMetadataTable(cursor)
     # initEmotionsTable()
     # insertEmotion(index)
-    query = [0.1] * 48
-    rows = getRelevantCommandIds(index, query, 3, cursor)
-    print(rankExperiences(rows))
+    # query = [0.1] * 48
+    # rows = getRelevantCommandIds(index, query, 3, cursor)
+    # print(rankExperiences(rows))
 
     conn.commit()
     conn.close()

@@ -8,18 +8,25 @@ from cloud import upload_to_cloud_storage
 from hume_embedding import getEmbeddingsLanguage
 from clustering import run_clustering
 from choose_query import choose_query_from_prompt
-from utils import getCloudUrl, create_sentences
+from utils import getCloudUrl, create_sentences, combine_date_and_time
 from test_script import simulateSingleUploadCall
 from db.pinecone.upload_content import embed_transcript_upload_pinecone
 from db.pinecone.upload_emotion import upload_emotion_pinecone
 from db.pinecone.query_content import query_pinecone_content
 from db.pinecone.query_emotion import query_pinecone_emotion
-from db.database import insertEmotion
 
+from db.sql.models import db, Sentence
+from db.sql.crud import create_sentence
 # To run: flask run --host=0.0.0.0 --debug
 
 app = Flask(__name__)
 CORS(app)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# db.init_app(app)
+
+# # Create the database and the tables
+# with app.app_context():
+#   db.create_all()
 
 
 @app.route("/")
@@ -78,7 +85,7 @@ def process_hume_results():
       chunks_df['duration'] = chunks_df['text'].apply(lambda x: len(x.split(' ')))
 
   # Combines chunks (some are too short to be meaningful) into sentences of 20-30 words
-  sentences = create_sentences(chunks, MIN_WORDS=20, MAX_WORDS=30)
+  sentences = create_sentences(chunks_data, MIN_WORDS=20, MAX_WORDS=30)
   sentences_df = pd.DataFrame(sentences)
 
   # For each sentence in sentences_df, create an emotions column, 
@@ -92,27 +99,46 @@ def process_hume_results():
   # Convert sentences to dictionary
   sentences_dict = sentences_df.to_dict(orient='records')
   
+  date = entry_data['date']
+  time = entry_data['time']
+  timestamp = combine_date_and_time(date, time)
+  
+  
   ### sentences_dict: {sentence_num, text, sentence_length, start_chunk_id, end_chunk_id, emotions}
+  for sentence in sentences_dict:
+    create_sentence(user_id = entry_data['user_id'],
+                    entry_id = entry_data['entry_id'],
+                    sentence_id = sentence['sentence_num'],
+                    topic_id = None,
+                    video_link = None,
+                    timestamp = timestamp,
+                    start_time = sentence['start_time'],
+                    end_time = sentence['end_time'],
+                    transcript_text= sentence['text'],
+                    emotions = sentence['emotions'] 
+                    )
+    print("Created sentence: ", sentence['sentence_num'])
+  
   
   # Embed transcript and upload to pinecone
-  sentences = [ sentence['text'] for sentence in sentences_dict ]
-  sentences_embeds = embed_transcript_upload_pinecone(sentences, 
-                                  user_id = entry_data['user_id'],
-                                  entry_id = entry_data['entry_id'],
-                                  upload = True)
+  # sentences = [ sentence['text'] for sentence in sentences_dict ]
+  # sentences_embeds = embed_transcript_upload_pinecone(sentences, 
+  #                                 user_id = entry_data['user_id'],
+  #                                 entry_id = entry_data['entry_id'],
+  #                                 upload = True)
   
-  # Upload emotional embeddings to pinecone
-  upload_emotion_pinecone(sentences_dict, user_id = entry_data['user_id'],
-                          entry_id = entry_data['entry_id'],
-                          upload = True)
+  # # Upload emotional embeddings to pinecone
+  # upload_emotion_pinecone(sentences_dict, user_id = entry_data['user_id'],
+  #                         entry_id = entry_data['entry_id'],
+  #                         upload = True)
   
-  # Clustering of sentences
-  episode_topics = run_clustering([sentences_dict], [sentences_embeds])
+  # # Clustering of sentences
+  # episode_topics = run_clustering([sentences_dict], [sentences_embeds])
   
-  return {
-    'sentences': sentences_dict,
-    'episode_topics': episode_topics
-  }
+  # return {
+  #   'sentences': sentences_dict,
+  #   'episode_topics': episode_topics
+  # }
   
   # Process emotions and metadata and upload to SQL - TODO
   # insertEmotion(sentences_dict, entryInfo)
@@ -140,13 +166,14 @@ def query():
   function_arguments = function_call['arguments']
   
   if function_name == 'make_sql_query':
-    print('This is a test')
     return None
   elif function_name == 'make_emotion_vector_db_query':
     print(f'Querying make_emotion_vector_db_query: {function_arguments}')
     emotion = function_arguments.get('emotion', None)
     # Embed emotion into an emotional vector (use Hume)
-    emotion_emb = [1.0] + [0.0] * 47 # ADMIRATION
+    emotion_emb = getEmbeddingFromString(emotion)
+    print(f'Emotion embedding: {emotion_emb}')    
+    
     query_result = query_pinecone_emotion(emotion_emb, user_id, top_k = 5)
     
     # Query pinecone for the top 5 closest emotional vectors
@@ -159,5 +186,22 @@ def query():
     query_result = query_pinecone_content(topic, user_id, top_k = 5)
     
   return query_result
+
+
+def getEmbeddingFromString(query):
+    # Convert the string into a file
+    filename = "temp.txt"
+    with open(filename, "w") as f:
+        f.write(query)
+    # Get the embeddings
+    embedding = getEmbeddingsLanguage(filename)
+    return embedding[0]['emotions']
   
+@app.route('/query_db')
+def index():
+    # Querying the database
+    sentences = Sentence.query.all()
+    return sentences
   
+if __name__ == '__main__':
+    app.run()

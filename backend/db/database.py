@@ -1,7 +1,9 @@
 import sqlite3
 import pinecone
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
+
+pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
 
 def initMetadataTable(cursor):
     cursor.execute('DROP TABLE IF EXISTS Sentences')
@@ -22,56 +24,80 @@ def initMetadataTable(cursor):
         )
     ''')
 
-    user_id = "userhello"
-    entry_id = "entry456"
-    topic_id = "hello789"
-    sentence_id = "B"
-    video_link = "hello"
-    timestamp = 123
-    start_time = "00:00:10"
-    end_time = "00:00:20"
-    transcript_text = "This is a test sentence."
-    emotion_values = [0.1] * 48
-    cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                   (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
+    # user_id = "userhello"
+    # entry_id = "entry456"
+    # topic_id = "hello789"
+    # sentence_id = "B"
+    # video_link = "hello"
+    # timestamp = 123
+    # start_time = "00:00:10"
+    # end_time = "00:00:20"
+    # transcript_text = "This is a test sentence."
+    # emotion_values = [0.1] * 48
+    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
 
 
-    user_id = "user123"
-    entry_id = "entry456"
-    topic_id = "hello789"
-    sentence_id = "A"
-    video_link = "hello"
-    timestamp = 123
-    start_time = "00:00:10"
-    end_time = "00:00:20"
-    transcript_text = "This is a test sentence."
-    emotion_values = [0.1] * 48
-    cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                   (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
+    # user_id = "user123"
+    # entry_id = "entry456"
+    # topic_id = "hello789"
+    # sentence_id = "A"
+    # video_link = "hello"
+    # timestamp = 123
+    # start_time = "00:00:10"
+    # end_time = "00:00:20"
+    # transcript_text = "This is a test sentence."
+    # emotion_values = [0.1] * 48
+    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
 
 
-    user_id = "user123"
-    entry_id = "entry456"
-    topic_id = "hellonot7990"
-    sentence_id = "C"
-    video_link = "hello"
-    timestamp = 123
-    start_time = "00:00:10"
-    end_time = "00:00:20"
-    transcript_text = "This is a test sentence."
-    emotion_values = [0.1] * 48
-    cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                   (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
+    # user_id = "user123"
+    # entry_id = "entry456"
+    # topic_id = "hellonot7990"
+    # sentence_id = "C"
+    # video_link = "hello"
+    # timestamp = 123
+    # start_time = "00:00:10"
+    # end_time = "00:00:20"
+    # transcript_text = "This is a test sentence."
+    # emotion_values = [0.1] * 48
+    # cursor.execute("INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+    #                (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, start_time, end_time, transcript_text))
 
 def initEmotionsTable():
     pinecone.create_index("hume-emotion", dimension=48)
 
-def insertEmotion(index):
-    index.upsert([
-        ("A", np.concatenate((np.ones(24), np.zeros(24))).tolist()),
-        ("B", [1] * 48),
-        ("C", np.random.rand(48,).tolist()),
-    ])
+def insertEmotion(data, meta):
+    user_id = meta["user_id"]
+    entry_id = meta["entry_id"]
+    conn = sqlite3.connect('metadata.db')
+    cursor = conn.cursor()
+ 
+    index = pinecone.Index("hume-emotion")
+    sentence_ids = [f'{user_id}-{entry_id}-{item["sentence_num"]}' for item in range(len(data))]
+    sentences_embeds = data["emotions"]
+    to_upsert = list(zip(sentence_ids, sentences_embeds))
+    for i in range(0, len(to_upsert), 10):
+        to_upsert_batch = to_upsert[i:i+10]
+        index.upsert(to_upsert_batch)
+
+    for item in data:
+        timestamp = f"{meta['date']} {meta['time']}"
+        sentence_id = f'{user_id}-{entry_id}-{item["sentence_num"]}'
+        transcript_text = item['text']
+
+        emotion_values = ', '.join(['?' for _ in range(48)])
+
+        cursor.execute('''
+            INSERT INTO Sentences (user_id, entry_id, topic_id, sentence_id, video_link, timestamp, transcript_text,
+                start_time, end_time, ''' + ', '.join([f'emotion{i}' for i in range(1, 49)]) + ''')
+            VALUES (?, ?, NULL, ?, NULL, ?, ?, NULL, NULL, ?, ''' + emotion_values + ''')
+        ''', (user_id, entry_id, sentence_id, timestamp, transcript_text) + tuple(item['emotion_values']))
+
+    conn.commit()
+    conn.close()
+
 
 def getRelevantCommandIds(index, vector, top_k, cursor):
     responses = index.query(
@@ -117,10 +143,8 @@ def rank_topics(sentences, topic_sentences, top_k):
 
     return top_ranked_topics
 
-    # pass
-
 if __name__ == '__main__':
-    conn = sqlite3.connect('your_database.db')
+    conn = sqlite3.connect('metadata.db')
     cursor = conn.cursor()
 
     pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
@@ -132,7 +156,5 @@ if __name__ == '__main__':
     rows = getRelevantCommandIds(index, query, 3, cursor)
     print(rankExperiences(rows))
 
-
-    # Commit the changes and close the connection
     conn.commit()
     conn.close()

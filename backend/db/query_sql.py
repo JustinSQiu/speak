@@ -1,15 +1,15 @@
 import pinecone
 from utils import embed_segments_openai
-from constants import PINECONE_API_KEY_CONTENT
+from constants import PINECONE_API_KEY
 
 
 # Previously Modal function. Now running here using OpenAI Embedding
-def query_pinecone_content(query: str, user_id: str, top_k: int = 3):
+def query_pinecone(query: str, user_id: str, top_k: int = 3):
   
     print(f'query_pinecone: {query}, {user_id}, {top_k}')
     
     pinecone.init(
-      api_key = PINECONE_API_KEY_CONTENT,
+      api_key = PINECONE_API_KEY,
       environment = "us-west1-gcp"
     )
     index = pinecone.Index('hume-content')

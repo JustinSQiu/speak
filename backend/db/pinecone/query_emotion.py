@@ -1,23 +1,19 @@
 import pinecone
-from utils import embed_segments_openai
-from constants import PINECONE_API_KEY_CONTENT
+from constants import PINECONE_API_KEY_EMOTION
 
 
 # Previously Modal function. Now running here using OpenAI Embedding
-def query_pinecone_content(query: str, user_id: str, top_k: int = 3):
-  
-    print(f'query_pinecone: {query}, {user_id}, {top_k}')
+def query_pinecone_emotion(emotion_emb, user_id: str, top_k: int = 3):
     
     pinecone.init(
-      api_key = PINECONE_API_KEY_CONTENT,
-      environment = "us-west1-gcp"
+      api_key = PINECONE_API_KEY_EMOTION,
+      environment = "asia-southeast1-gcp-free"
     )
-    index = pinecone.Index('hume-content')
-    query_emb = embed_segments_openai([query])[0] # 1 x 1536
+    index = pinecone.Index('hume-emotion')
       
     # Query Pinecone
     topk_matches = index.query(
-      vector = query_emb, 
+      vector = emotion_emb, 
       filter = {
           'user_id': user_id
       },
@@ -26,6 +22,8 @@ def query_pinecone_content(query: str, user_id: str, top_k: int = 3):
     
     # Convert QueryResponse to dict
     topk_matches = topk_matches.to_dict()
+    
+    print(topk_matches)
 
     matches_processed = [
       {

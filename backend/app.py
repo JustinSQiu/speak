@@ -2,6 +2,8 @@ import json
 from flask import Flask, request
 from flask_cors import CORS
 from cloud import upload_to_cloud_storage
+from hume_embeding import getEmbeddingsLanguage
+from utils import getCloudUrl
 
 # To run: flask run --host=0.0.0.0 --debug
 
@@ -13,18 +15,29 @@ CORS(app)
 def hello_world():
     return json.dumps("Hello World!!")
 
-@app.route("/video",  methods=['POST'])
+
+@app.route("/video", methods=["POST"])
 def get_recording():
-    upload_to_cloud_storage(request.data, 1)
+    (id, time, date) = upload_to_cloud_storage(request.data, 1)
+    url = getCloudUrl(id)
+    processedEmbeddings = getEmbeddingsLanguage(url)
+    metadata = {
+        "journalId": id,
+        "time": time,
+        "date": date,
+        "userId": 0,
+        "type": "video",
+    }
     return "Success"
 
 
 @app.route("/audio", methods=["POST"])
 def get_audio():
-    upload_to_cloud_storage(request.data, 2)
+    (id, time, date) = upload_to_cloud_storage(request.data, 2)
     return "Success"
 
-@app.route('/text', methods=["POST"])
+
+@app.route("/text", methods=["POST"])
 def get_text():
-    upload_to_cloud_storage(request.data, 3)
+    (id, time, date) = upload_to_cloud_storage(request.data, 3)
     return "Sucess"

@@ -44,13 +44,21 @@ Output:
 def run_clustering(entries_sentences, entries_embeds):
   
   # Calculate similarity matrices for each entry
+  entries_embeds = [np.array(entry_embeds) for entry_embeds in entries_embeds]
+  
+  print('entries_embeds', entries_embeds[0].shape)
+    
   # entries_similarity_matrices: List of n_entries, each element is a n_sentences x n_sentences similarity matrix
   entries_similarity_matrices = [get_similarity_matrix(entry_embeds) for entry_embeds in entries_embeds]
   
+  print('entries_similarity_matrices', entries_similarity_matrices[0].shape)
+  
   # Conduct community-finding to get clusters of sentences
   # entries_communities: List of n_entries, each element is dict with 'community_sentence' and 'sentence_community'
-  entries_communities = [get_communities(entry_similarity_matrix, num_communities = 4, bonus_constant = 0.1, min_size = 3, num_iterations = 5) 
+  entries_communities = [get_communities(entry_similarity_matrix, num_communities = np.floor(np.sqrt(entry_similarity_matrix.shape[0])), bonus_constant = 0.1, min_size = 2, num_iterations = 20) 
                         for entry_similarity_matrix in entries_similarity_matrices]
+  
+  print('entries_communities', entries_communities[0]['community_sentence'])
   
   # entries_topics_sentences: List of n_entries, each element is a list of n_communities, each element is a list of sentences in that community
 
@@ -58,14 +66,16 @@ def run_clustering(entries_sentences, entries_embeds):
   for entry_id, entry_communities in enumerate(entries_communities):
     for comm_id, comm_sentence_ids in enumerate(entry_communities['community_sentence']):
       # Get the sentences in that community
+      print(entry_id, entry_communities, comm_id, comm_sentence_ids)
       sentences = [entries_sentences[entry_id][sentence_id]['text'] for sentence_id in comm_sentence_ids]
-      
-      entries_topics.append({
+      entry_topic = {
         'entry_id': entry_id,
         'topic_id': comm_id,
         'sentence_ids': sorted(comm_sentence_ids),
         'sentences': sentences
-      })
+      }
+      print(entry_topic)
+      entries_topics.append(entry_topic)
       
   # Generate titles for each topic
   entries_topics = generate_topic_titles(entries_topics)
@@ -144,7 +154,7 @@ def get_communities(similarity_mat, num_communities = 4, bonus_constant = 0.25, 
   # Store the accepted partitionings
   communities_title_accepted = []
 
-  resolution = 0.85
+  resolution = 0.6
   resolution_step = 0.01
   iterations = num_iterations
 
@@ -221,6 +231,7 @@ def get_similarity_matrix(embeds):
   # Embeds is n x 1536 vector
   n_vectors = embeds.shape[0]
   cosine_sim = np.zeros((n_vectors, n_vectors))
+
   # calculate cosine similarity between all pairs of sentences
   for i in range(n_vectors):
     cosine_sim[i, i] = 1

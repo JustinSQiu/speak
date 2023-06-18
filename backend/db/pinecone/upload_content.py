@@ -23,9 +23,7 @@ def embed_transcript_upload_pinecone(episode_sentences, user_id: str, entry_id: 
   sentences_embeds = embed_segments_openai(episode_sentences)
   
   to_upsert = list(zip(sentence_ids, sentences_embeds, sentences_metadata))
-  
-  print(to_upsert)
-  
+    
   print(f'Uploading to Pinecone, {len(to_upsert)} sentences')
   
   for i in range(0, len(to_upsert), 10):
@@ -33,42 +31,7 @@ def embed_transcript_upload_pinecone(episode_sentences, user_id: str, entry_id: 
     index.upsert(to_upsert_batch)
     
   print('Upload to Pinecone complete', index.describe_index_stats())
+  return sentences_embeds
 
 
-
-
-def create_sentences(segments, MIN_WORDS, MAX_WORDS):
-
-  # Combine the non-sentences together
-  sentences = []
-
-  is_new_sentence = True
-  sentence_length = 0
-  sentence_num = 0
-  sentence_segments = []
-
-  for i in range(len(segments)):
-    if is_new_sentence == True:
-      is_new_sentence = False
-    # Append the segment
-    sentence_segments.append(segments[i])
-    segment_words = segments[i].split(' ')
-    sentence_length += len(segment_words)
-    
-    # If exceed MAX_WORDS, then stop at the end of the segment
-    # Only consider it a sentence if the length is at least MIN_WORDS
-    if (sentence_length >= MIN_WORDS and segments[i][-1] == '.') or sentence_length >= MAX_WORDS:
-      sentence = ' '.join(sentence_segments)
-      sentences.append({
-        'sentence_num': sentence_num,
-        'text': sentence,
-        'sentence_length': sentence_length
-      })
-      # Reset
-      is_new_sentence = True
-      sentence_length = 0
-      sentence_segments = []
-      sentence_num += 1
-
-  return sentences
 

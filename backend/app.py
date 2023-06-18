@@ -4,15 +4,17 @@ from flask_cors import CORS
 
 import pandas as pd
 import numpy as np
-from backend.cloud import upload_to_cloud_storage
-from backend.hume_embedding import getEmbeddingsLanguage
-from backend.clustering import run_clustering
-from backend.choose_query import choose_query_from_prompt
-from backend.utils import getCloudUrl, create_sentences
-from backend.test_script import simulateSingleUploadCall
-from backend.db.pinecone.upload_content import embed_transcript_upload_pinecone
-from backend.db.pinecone.query_content import query_pinecone
-from backend.db.database import insertEmotion
+from cloud import upload_to_cloud_storage
+from hume_embedding import getEmbeddingsLanguage
+from clustering import run_clustering
+from choose_query import choose_query_from_prompt
+from utils import getCloudUrl, create_sentences
+from test_script import simulateSingleUploadCall
+from db.pinecone.upload_content import embed_transcript_upload_pinecone
+from db.pinecone.upload_emotion import upload_emotion_pinecone
+from db.pinecone.query_content import query_pinecone_content
+from db.pinecone.query_emotion import query_pinecone_emotion
+from db.database import insertEmotion
 
 # To run: flask run --host=0.0.0.0 --debug
 
@@ -90,20 +92,31 @@ def process_hume_results():
   # Convert sentences to dictionary
   sentences_dict = sentences_df.to_dict(orient='records')
   
-  ### sentences_dict: {sentence_num, text, sentence_length, start_chunk_id, end_chunk_id}
+  ### sentences_dict: {sentence_num, text, sentence_length, start_chunk_id, end_chunk_id, emotions}
   
   # Embed transcript and upload to pinecone
   sentences = [ sentence['text'] for sentence in sentences_dict ]
   sentences_embeds = embed_transcript_upload_pinecone(sentences, 
                                   user_id = entry_data['user_id'],
-                                  entry_id = entry_data['entry_id'])
+                                  entry_id = entry_data['entry_id'],
+                                  upload = True)
+  
+  # Upload emotional embeddings to pinecone
+  upload_emotion_pinecone(sentences_dict, user_id = entry_data['user_id'],
+                          entry_id = entry_data['entry_id'],
+                          upload = True)
   
   # Clustering of sentences
   episode_topics = run_clustering([sentences_dict], [sentences_embeds])
   
+  return {
+    'sentences': sentences_dict,
+    'episode_topics': episode_topics
+  }
+  
   # Process emotions and metadata and upload to SQL - TODO
-  insertEmotion(sentences_dict, entryInfo)
-  return episode_topics
+  # insertEmotion(sentences_dict, entryInfo)
+  # return episode_topics
 
 
 # Given a user query, determine which function to call
@@ -116,6 +129,8 @@ def query():
   query = body['query']
   user_id = body['user_id']
   
+  print(query, user_id)
+  
   # Run the query through the 'choose_query' function
   function_call = choose_query_from_prompt(query)
   if not function_call:
@@ -125,17 +140,23 @@ def query():
   function_arguments = function_call['arguments']
   
   if function_name == 'make_sql_query':
-    pass
+    return None
+  elif function_name == 'make_emotion_vector_db_query':
+    print(f'Querying make_emotion_vector_db_query: {function_arguments}')
+    emotion = function_arguments.get('emotion', None)
+    # Embed emotion into an emotional vector (use Hume)
+    emotion_emb = [1.0] + [0.0] * 47 # ADMIRATION
+    query_result = query_pinecone_emotion(emotion_emb, user_id, top_k = 5)
+    
+    # Query pinecone for the top 5 closest emotional vectors
   elif function_name == 'make_content_vector_db_query':
     
     topic = function_arguments.get('topic', None)
     start_time = function_arguments.get('start_time', None)
     end_time = function_arguments.get('end_time', None)
     
-    query_result = query_pinecone(query, user_id, top_k = 5)
+    query_result = query_pinecone_content(topic, user_id, top_k = 5)
     
-    
-  
-  return function_call
+  return query_result
   
   

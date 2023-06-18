@@ -1,5 +1,5 @@
 import sqlite3
-import pinecone
+import backend.db.pinecone.upload_content as upload_content
 
 def initMetadataTable(cursor):
     # Define the emotion column names
@@ -22,10 +22,10 @@ def initMetadataTable(cursor):
     ''')
 
 def initEmotionsTable():
-    pinecone.create_index("hume-emotion", dimension=48)
+    upload_content.create_index("hume-emotion", dimension=48)
 
 def insertEmotion():
-    index = pinecone.Index("hume-emotion")
+    index = upload_content.Index("hume-emotion")
     index.upsert([
         ("A", [0.1] * 48)
     ])
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     conn = sqlite3.connect('your_database.db')
     cursor = conn.cursor()
 
-    pinecone.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
+    upload_content.init(api_key="2d619f01-148b-4a3a-9bbf-4b8211f8409d", environment="asia-southeast1-gcp-free")
     # initMetadataTable()
     # initEmotionsTable()
     insertEmotion()

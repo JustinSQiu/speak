@@ -1,5 +1,5 @@
-
 from langchain.embeddings import OpenAIEmbeddings
+from enum import Enum
 import os
 os.environ["OPENAI_API_KEY"] = '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'
 

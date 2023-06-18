@@ -1,9 +1,9 @@
 import pinecone
+from utils import embed_segments_openai
+from constants import PINECONE_API_KEY
 import os
-from langchain.embeddings import OpenAIEmbeddings
 
-
-pinecone.init(api_key = 'b183d65d-9501-483a-82e7-8e86f9eb46ce', environment = 'us-west1-gcp')
+pinecone.init(api_key = PINECONE_API_KEY, environment = 'us-west1-gcp')
 
 os.environ["OPENAI_API_KEY"] = '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'
 
@@ -35,11 +35,7 @@ def embed_transcript_upload_pinecone(episode_sentences, user_id: str, entry_id: 
   print('Upload to Pinecone complete', index.describe_index_stats())
 
 
-# Batch embedding of segments using OpenAI embeddings - returns a np array (num_sentences x 1536)
-def embed_segments_openai(sentences):
-  openai_embed = OpenAIEmbeddings() # Size of embeds: (num_chunks x 1536)
-  sentences_embeds = openai_embed.embed_documents(sentences)
-  return sentences_embeds
+
 
 def create_sentences(segments, MIN_WORDS, MAX_WORDS):
 

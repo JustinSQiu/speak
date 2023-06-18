@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # initEmotionsTable()
     # insertEmotion(index)
     query = [0.1] * 48
-    print(getRelevantCommandIds(index, query, 3))
+    print(getRelevantCommandIds(index, query, 3, cursor))
 
 
     # Commit the changes and close the connection

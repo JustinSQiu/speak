@@ -10,15 +10,14 @@ const TextMemo = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        console.log('submitted')
         // Perform desired action with the form data
         console.log('Form submitted with value:', inputValue);
-        // Reset the input value
         fetch('http://localhost:5000/text', {
             method: 'POST',
             body: inputValue,
             mode: 'no-cors',
         }).then(console.log("sent to backend"))
+        // Reset the input value
         setInputValue('');
     };
 
@@ -26,27 +25,37 @@ const TextMemo = () => {
         setInputValue(event.target.value);
     };
 
+    const style = {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    }
+
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-            }}
-        >
+        <div style={style}>
+            <Box
+                sx={{
+                    width: '80%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    flexDirection: 'column'
+                }}
+            >
                 <TextField
-                    sx={{ width: '75%'}}
+                    // sx={ }
                     id="outlined-multiline-static"
                     label="Journal your Thoughts"
                     multiline
                     defaultValue=""
+                    value={inputValue}
                     onChange={handleChange}
-                    onSubmit={handleSubmit}
                 />
-
                 <Button onClick={handleSubmit} variant="contained">
                     Submit Entry
                 </Button>
-        </Box>
+            </Box>
+        </div>
+
 
     );
 };

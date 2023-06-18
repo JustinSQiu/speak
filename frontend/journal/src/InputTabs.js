@@ -53,20 +53,25 @@ export default function BasicTabs() {
 
   return (
     <Box sx={{ width: '100%' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered>
-          <Tab label="Upload a New Recording" {...a11yProps(0)} />
-          <Tab label="Write a New Entry" {...a11yProps(1)}/>
-          <Tab label="Search" {...a11yProps(2)} />
-        </Tabs>
+      <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered>
+        <Tab label="Upload a New Recording" {...a11yProps(0)} />
+        <Tab label="Write a New Entry" {...a11yProps(1)} />
+        <Tab label="Look back" {...a11yProps(2)} />
+      </Tabs>
       <TabPanel value={value} index={0}>
         <Upload />
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+      }} value={value} index={1}>
         <TextMemo />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <SearchBar />
       </TabPanel>
-    </Box>
+    </Box >
   );
 }

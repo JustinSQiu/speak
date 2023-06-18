@@ -1,3 +1,5 @@
 /env/Lib
 /calhacks
 /test
+/env
+__pycache__

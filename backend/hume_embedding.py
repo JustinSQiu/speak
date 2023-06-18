@@ -48,7 +48,7 @@ def getEmbeddingsLanguage(path):
     # What other configs are there to use?
     config = [LanguageConfig(granularity="utterance")]
 
-    job = client.submit_job(urls, config)
+    job = client.submit_job(None, config, files=urls)
 
     details = job.await_complete()
     print("Details status", details.get_status())

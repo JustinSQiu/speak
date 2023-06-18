@@ -14,14 +14,19 @@ const SearchBar = ({ onSearch }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        const query = searchTerm
         console.log(searchTerm)
-        // const response = await fetch('http://localhost:5000/search', {
-        //     method: 'POST',
-        //     body: searchTerm,
-        //     mode: 'no-cors',
-        // })
-        // const data = await response.json()
-        const data = "hello! muah"
+        const response = await fetch('http://localhost:5000/query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query }),
+            mode: 'cors',
+        });
+        console.log(response)
+        const data = await response.json();
+        console.log(data)
         setAnswer(data)
         setJustAsked(true);
     };
@@ -58,6 +63,7 @@ const SearchBar = ({ onSearch }) => {
                     sx={{ backgroundColor: '#e6eeff', }}
                     id="outlined-multiline-static"
                     fullWidth
+                    multiline
                     label="A look into the past"
                     value={answer} /></>) : <></>}
 

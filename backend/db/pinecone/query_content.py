@@ -4,7 +4,7 @@ from constants import PINECONE_API_KEY_CONTENT
 
 
 # Previously Modal function. Now running here using OpenAI Embedding
-def query_pinecone(query: str, user_id: str, top_k: int = 3):
+def query_pinecone_content(query: str, user_id: str, top_k: int = 3):
   
     print(f'query_pinecone: {query}, {user_id}, {top_k}')
     

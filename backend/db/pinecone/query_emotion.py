@@ -1,13 +1,9 @@
 import pinecone
-from utils import embed_segments_openai
 from constants import PINECONE_API_KEY_EMOTION
 
 
 # Previously Modal function. Now running here using OpenAI Embedding
 def query_pinecone_emotion(emotion_emb, user_id: str, top_k: int = 3):
-
-    # Enter some fake emotion embeddings for now
-    emotion_emb = [0.05] * 48
     
     pinecone.init(
       api_key = PINECONE_API_KEY_EMOTION,
@@ -26,6 +22,8 @@ def query_pinecone_emotion(emotion_emb, user_id: str, top_k: int = 3):
     
     # Convert QueryResponse to dict
     topk_matches = topk_matches.to_dict()
+    
+    print(topk_matches)
 
     matches_processed = [
       {

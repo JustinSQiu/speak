@@ -25,8 +25,8 @@ def processChunks(response, model="language"):
             "chunk_id": str(uuid4()),
         }
         if chunk.get("time") is not None:
-            md["time_begin"] = chunk["time"]["begin"]
-            md["time_end"] = chunk["time"]["end"]
+            md["start_time"] = chunk["time"]["begin"]
+            md["end_time"] = chunk["time"]["end"]
 
         unProcessedEmotions = (
             chunk["emotions"][:48] if len(chunk["emotions"]) > 48 else chunk["emotions"]
@@ -60,11 +60,11 @@ def getEmbeddingsLanguage(path):
 
 def combineFullDataFromJournal(journalMetadata, processedChunks):
     return {
-        "user_id": journalMetadata["userId"],
+        "user_id": journalMetadata["user_id"],
+        "entry_id": journalMetadata["entry_id"],
         "type": journalMetadata["type"],
         "date": journalMetadata["date"],
         "time": journalMetadata["time"],
-        "journal_id": journalMetadata["journalId"],
         "chunks": processedChunks,
     }
 

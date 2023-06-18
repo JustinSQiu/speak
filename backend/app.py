@@ -140,6 +140,7 @@ def query():
   function_arguments = function_call['arguments']
   
   if function_name == 'make_sql_query':
+    print('This is a test')
     return None
   elif function_name == 'make_emotion_vector_db_query':
     print(f'Querying make_emotion_vector_db_query: {function_arguments}')

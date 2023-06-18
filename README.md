@@ -1,4 +1,4 @@
-# test
+# CalHacks AI Hackathon 2023
 BACKEND:
 ```cd backend```
 
@@ -6,7 +6,7 @@ BACKEND:
 https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/
 (PLEASE ENTER INTO VIRTUAL ENV FIRST)
 
-2.  ~ pip install -r requirements.txt/home/isaac/AI_Projects/calhacks/calhacks/backend/calhacks/lib64
+2.  ~ pip install -r requirements.txt
 
 3. to run: flask run --host=0.0.0.0 --debug
 

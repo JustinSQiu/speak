@@ -39,28 +39,45 @@ def hello_world():
 @app.route("/video", methods=["POST"])
 def get_recording():
     (id, time, date) = upload_to_cloud_storage(request.data, 1)
-
-    # url = getCloudUrl(id)
-    # processedEmbeddings = getEmbeddingsLanguage(url)
-    # metadata = {
-    #     "journalId": id,
-    #     "time": time,
-    #     "date": date,
-    #     "userId": 0,
-    #     "type": "video",
-    # }
+    entryInfo = {
+        "entry_id": id,
+        "time": time,
+        "date": date,
+        "user_id": 0,
+        "type": "video",
+        "path": "local.mp4",
+    }
+    process_hume_results(entryInfo)
     return "Success"
 
 
 @app.route("/audio", methods=["POST"])
 def get_audio():
     (id, time, date) = upload_to_cloud_storage(request.data, 2)
+    entryInfo = {
+        "entry_id": id,
+        "time": time,
+        "date": date,
+        "user_id": 0,
+        "type": "audio",
+        "path": "local.wav",
+    }
+    process_hume_results(entryInfo)
     return "Success"
 
 
 @app.route("/text", methods=["POST"])
 def get_text():
     (id, time, date) = upload_to_cloud_storage(request.data, 3)
+    entryInfo = {
+        "entry_id": id,
+        "time": time,
+        "date": date,
+        "user_id": 0,
+        "type": "audio",
+        "path": "local.txt",
+    }
+    process_hume_results(entryInfo)
     return "Success"
 
 
@@ -71,11 +88,9 @@ JSON body input: {user_id, entry_id, type, date, time, path}
 """
 
 
-@app.route("/process_hume_results", methods=["POST"])
-def process_hume_results():
-    entryInfo = request.get_json()
+# @app.route("/process_hume_results", methods=["POST"])
+def process_hume_results(entryInfo):
     entry_data = simulateSingleUploadCall(entryInfo)
-
     ### 1: Process sentences, get openai embeddings and upload
     chunks_data = entry_data["chunks"]
     chunks = [chunk["text"] for chunk in chunks_data]

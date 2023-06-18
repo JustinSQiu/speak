@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from hume_embedding import (
     processChunks,
     combineFullDataFromJournal,
@@ -10,14 +11,16 @@ from pprint import pprint
 # EDIT HERE FOR A SINGLE BACKEND CALL
 def simulateSingleUploadCall(entryInfo):
     # Assumes it has been uploaded to S3 bucket and is in metadata database
-    file = open(entryInfo['path'], "r")
-    response = json.load(file)
-    processedLanguage = processChunks(response, model="language")
+    file_path = entryInfo["path"]
+    absPath = Path(file_path).resolve()
+    if not absPath.exists():
+        raise ValueError("File does not exist")
+    processedLanguage = getEmbeddingsLanguage(str(absPath))
     # Contains all necessary metadata here
     fullData = combineFullDataFromJournal(entryInfo, processedLanguage)
-    
+
     return fullData
-    
+
     # Save fullData as a json
     # with open(f"test/{userInfo['entry_id']}.json", "w") as outfile:
     #     json.dump(fullData, outfile)
@@ -41,7 +44,7 @@ def runSimulator():
                 "date": f"2022-12-{i*5}",
                 "time": f"{10 + i}:00",
                 "entry_id": i,
-                "path": f"embeddings/text{i}.json"
+                "path": f"embeddings/text{i}.json",
             }
         else:
             entryInfo = {
@@ -50,7 +53,7 @@ def runSimulator():
                 "date": f"2023-01-{(i-5)*5}",
                 "time": f"{10 + i}:00",
                 "entry_id": i,
-                "path": f"embeddings/text{i}.json"
+                "path": f"embeddings/text{i}.json",
             }
         simulateSingleUploadCall(entryInfo)
 
@@ -61,7 +64,7 @@ def runSimulator():
         "date": "2022-12-25",
         "time": "13:00",
         "entry_id": 10,
-        "path": f"embeddings/video{1}.json"
+        "path": f"embeddings/video{1}.json",
     }
     simulateSingleUploadCall(entryInfo)
 
@@ -72,7 +75,7 @@ def runSimulator():
         "date": "2023-01-14",
         "time": "20:00",
         "entry_id": 11,
-        "path": f"embeddings/video{2}.json"
+        "path": f"embeddings/video{2}.json",
     }
     simulateSingleUploadCall(entryInfo)
 
@@ -83,7 +86,7 @@ def runSimulator():
         "date": "2022-12-04",
         "time": "20:00",
         "entry_id": 12,
-        "path": f"embeddings/audio{1}.json"
+        "path": f"embeddings/audio{1}.json",
     }
     simulateSingleUploadCall(entryInfo)
 
@@ -94,7 +97,7 @@ def runSimulator():
         "date": "2023-01-07",
         "time": "08:00",
         "entry_id": 13,
-        "path": f"embeddings/audio{2}.json"
+        "path": f"embeddings/audio{2}.json",
     }
     simulateSingleUploadCall(entryInfo)
 

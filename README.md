@@ -1,4 +1,4 @@
-# CalHacks Team Project
+# CalHacks AI Hackathon 2023
 BACKEND:
 ```cd backend```
 

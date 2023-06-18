@@ -53,13 +53,13 @@ function_descriptions = [
   },
   {
     'name': 'make_emotion_vector_db_query',
-    'description': 'Used to answer queries which involve emotions which are not exact matches of the words: happy, sad, angry, fearful, disgusted, surprised',
+    'description': 'Used to answer queries which involve descriptions of emotions longer than 1 word, or words which are not exact matches of the words: happy, sad, angry, fearful, disgusted, surprised',
     'parameters': {
       'type': 'object',
       'properties': {
         'emotion': {
         'type': 'string',
-        'description': 'The topic or experience with which the user wants to query relevant experiences using semantic search',
+        'description': 'A description of the emotion that the user wants to query about, can be multiple words',
         },
         'start_time': {
           'type': 'integer',

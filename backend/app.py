@@ -115,6 +115,8 @@ def query():
   query = body['query']
   user_id = body['user_id']
   
+  print(query, user_id)
+  
   # Run the query through the 'choose_query' function
   function_call = choose_query_from_prompt(query)
   if not function_call:
@@ -124,17 +126,15 @@ def query():
   function_arguments = function_call['arguments']
   
   if function_name == 'make_sql_query':
-    pass
+    return None
   elif function_name == 'make_content_vector_db_query':
     
     topic = function_arguments.get('topic', None)
     start_time = function_arguments.get('start_time', None)
     end_time = function_arguments.get('end_time', None)
     
-    query_result = query_pinecone(query, user_id, top_k = 5)
+    query_result = query_pinecone(topic, user_id, top_k = 5)
     
-    
-  
-  return function_call
+    return query_result
   
   

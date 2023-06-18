@@ -5,15 +5,14 @@ from constants import PINECONE_API_KEY
 
 # Previously Modal function. Now running here using OpenAI Embedding
 def query_pinecone(query: str, user_id: str, top_k: int = 3):
-    
-    # Connect to Pinecone vector database
-    index_id = 'hume-content'
+  
+    print(f'query_pinecone: {query}, {user_id}, {top_k}')
     
     pinecone.init(
       api_key = PINECONE_API_KEY,
       environment = "us-west1-gcp"
     )
-    index = pinecone.Index(index_id)
+    index = pinecone.Index('hume-content')
     query_emb = embed_segments_openai([query])[0] # 1 x 1536
       
     # Query Pinecone
@@ -24,7 +23,19 @@ def query_pinecone(query: str, user_id: str, top_k: int = 3):
       },
       top_k = top_k, 
       include_metadata=True)
-        
-    topk_matches = topk_matches['matches']
     
-    return topk_matches
+    # Convert QueryResponse to dict
+    topk_matches = topk_matches.to_dict()
+
+    matches_processed = [
+      {
+        'user_id': match['metadata']['user_id'],
+        'entry_id':  match['metadata']['entry_id'],
+        'sentence_id': match['metadata']['sentence_id'],
+        'text': match['metadata']['text'],
+        'score': match['score']
+      } for match in topk_matches['matches']
+    ]
+    
+            
+    return matches_processed

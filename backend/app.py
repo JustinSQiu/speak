@@ -7,9 +7,11 @@ import numpy as np
 from cloud import upload_to_cloud_storage
 from hume_embedding import getEmbeddingsLanguage
 from clustering import run_clustering
+from choose_query import choose_query_from_prompt
 from utils import getCloudUrl, create_sentences
 from test_script import simulateSingleUploadCall
 from db.pinecone.upload_content import embed_transcript_upload_pinecone
+from db.pinecone.query_content import query_pinecone
 
 # To run: flask run --host=0.0.0.0 --debug
 
@@ -50,6 +52,10 @@ def get_text():
 
 
 # Given hume results, process them
+''' 
+JSON body input: {user_id, entry_id, type, date, time, path}
+
+'''
 @app.route('/process_hume_results', methods=['POST'])
 def process_hume_results():
   entryInfo = request.get_json()
@@ -83,6 +89,8 @@ def process_hume_results():
   # Convert sentences to dictionary
   sentences_dict = sentences_df.to_dict(orient='records')
   
+  ### sentences_dict: {sentence_num, text, sentence_length, start_chunk_id, end_chunk_id}
+  
   # Embed transcript and upload to pinecone
   sentences = [ sentence['text'] for sentence in sentences_dict ]
   sentences_embeds = embed_transcript_upload_pinecone(sentences, 
@@ -93,7 +101,40 @@ def process_hume_results():
   episode_topics = run_clustering([sentences_dict], [sentences_embeds])
   
   # Process emotions and metadata and upload to SQL - TODO
-  
-  
-  
+
   return episode_topics
+
+
+# Given a user query, determine which function to call
+'''
+JSON body input: {query: str, user_id: str}
+'''
+@app.route('/query', methods=['POST'])
+def query():
+  body = request.get_json()
+  query = body['query']
+  user_id = body['user_id']
+  
+  # Run the query through the 'choose_query' function
+  function_call = choose_query_from_prompt(query)
+  if not function_call:
+    return
+  
+  function_name = function_call['name']
+  function_arguments = function_call['arguments']
+  
+  if function_name == 'make_sql_query':
+    pass
+  elif function_name == 'make_content_vector_db_query':
+    
+    topic = function_arguments.get('topic', None)
+    start_time = function_arguments.get('start_time', None)
+    end_time = function_arguments.get('end_time', None)
+    
+    query_result = query_pinecone(query, user_id, top_k = 5)
+    
+    
+  
+  return function_call
+  
+  

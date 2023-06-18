@@ -1,5 +1,4 @@
 import langchain
-import openai
 import json
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, ChatMessage

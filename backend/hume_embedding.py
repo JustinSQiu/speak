@@ -43,7 +43,11 @@ def processChunks(response, model="language"):
 
 def getEmbeddingsLanguage(path):
     client = HumeBatchClient("cRASOeAzmGOUQveP3vrNBb1MpSEPGejdvWPG8UAQYrEkOrpu")
-    urls = [path]
+    # Check if file exists
+    absolute_path = Path(path).resolve()
+    if not absolute_path.exists():
+        raise ValueError("File does not exist")
+    urls = [str(absolute_path)]
     # What other configs are there to use?
     config = [LanguageConfig(granularity="utterance")]
 
@@ -52,7 +56,7 @@ def getEmbeddingsLanguage(path):
     details = job.await_complete()
     print("Details status", details.get_status())
     response = job.get_predictions()
-    # job.download_predictions(f"audio{i}.json")
+    job.download_predictions(f"test.json")
     processedLanguage = processChunks(response, model="language")
 
     return processedLanguage
@@ -99,3 +103,7 @@ def main():
 
 # if __name__ == "__main__":
 #     main()
+
+# getEmbeddingsLanguage(
+#     "local.mp4",
+# )

@@ -1,0 +1,14 @@
+[
+  {
+    "source": {
+      "filename": "file",
+      "content_type": null,
+      "md5sum": "4b9fb62aa1bd2f217f5eaf2920204abc",
+      "type": "file"
+    },
+    "results": {
+      "predictions": [],
+      "errors": []
+    }
+  }
+]
